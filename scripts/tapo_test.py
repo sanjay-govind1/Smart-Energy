@@ -2,9 +2,9 @@
 # from pprint import pprint
 # from tapo import ApiClient
 
-# TAPO_EMAIL = "sanjaygovind1234@gmail.com"   # <-- change this
-# TAPO_PASSWORD = "Leo@messi1234"         # <-- change this
-# PLUG_IP = "10.58.217.63"                    # <-- change this
+# TAPO_EMAIL = "**********"   
+# TAPO_PASSWORD = "*********"        
+# PLUG_IP = "*********"                    
 
 # async def main():
 #     client = ApiClient(TAPO_EMAIL, TAPO_PASSWORD)
@@ -44,9 +44,9 @@ from tapo.requests import EnergyDataInterval
 
 
 async def main():
-    tapo_username = "sanjaygovind1234@gmail.com"
-    tapo_password = "Leo@messi1234"
-    ip_address = "10.58.217.63"
+    tapo_username = "**********"
+    tapo_password = "**********"
+    ip_address = "************"
 
     client = ApiClient(tapo_username, tapo_password)
     device = await client.p110(ip_address)
