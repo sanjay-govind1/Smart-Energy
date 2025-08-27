@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Energy Usage</title>
+</head>
+<body>
+    <h1>Smart Energy Usage Monitoring</h1>
+
+    {% if latest %}
+        <h2>Latest Reading ({{ latest.timestamp }})</h2>
+        <ul>
+            <li>Device: {{ latest.device_name }}</li>
+            <li>Current Power: {{ latest.current_power }} W</li>
+            <li>Today’s Energy: {{ latest.today_energy }} kWh</li>
+            <li>Month’s Energy: {{ latest.month_energy }} kWh</li>
+            <li>Runtime: {{ latest.runtime_minutes }} minutes</li>
+        </ul>
+    {% else %}
+        <p>No readings available.</p>
+    {% endif %}
+</body>
+</html>
