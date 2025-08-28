@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from .models import EnergyReading
 from energy.tapo_client.utils import collect_reading_sync 
 from .ml_utils import predict_tomorrow_energy
+from .models import SensorReading
 
 def collect_data_view(request):
     try:
@@ -53,3 +54,14 @@ def home_view(request):
         "latest": latest,
         "forecast": forecast
     })
+
+
+def latest_sensor(request):
+    latest = SensorReading.objects.last()
+    if latest:
+        return JsonResponse({
+            "temperature": latest.temperature,
+            "ldr": latest.ldr,
+            "timestamp": latest.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return JsonResponse({"error": "No sensor data"}, status=404)

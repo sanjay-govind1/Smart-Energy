@@ -11,3 +11,11 @@ class EnergyReading(models.Model):
     def __str__(self):
         return f"{self.device_name} - {self.current_power}W at {self.timestamp}"
 
+
+class SensorReading(models.Model):
+    temperature = models.FloatField()
+    ldr = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.temperature} °C, LDR {self.ldr}"

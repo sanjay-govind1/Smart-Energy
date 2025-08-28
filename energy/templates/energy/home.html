@@ -114,57 +114,91 @@
   <h2>📈 Energy Usage (Last 7 Days) — Live Update</h2>
   <canvas id="energyChart"></canvas>
 </div>
-
+<div class="card">
+      <h2>🌡 Sensor Data (ESP32 via MQTT)</h2>
+      <p class="stat"><strong>Temperature:</strong> <span id="tempValue">--</span> °C</p>
+      <p class="stat"><strong>LDR:</strong> <span id="ldrValue">--</span></p>
+      <p class="stat"><strong>Timestamp:</strong> <span id="sensorTime">--</span></p>
+    </div>
 <!-- Chart.js library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('energyChart').getContext('2d');
-    const energyChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: [],  // empty initially
-        datasets: [{
-          label: 'Daily Energy (Wh)',
-          data: [],
-          backgroundColor: 'rgba(37, 99, 235, 0.6)',
-          borderColor: 'rgba(37, 99, 235, 1)',
-          borderWidth: 1,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: { display: true, text: "Wh" }
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctx = document.getElementById('energyChart').getContext('2d');
+      const energyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],  // empty initially
+          datasets: [{
+            label: 'Daily Energy (Wh)',
+            data: [],
+            backgroundColor: 'rgba(37, 99, 235, 0.6)',
+            borderColor: 'rgba(37, 99, 235, 1)',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Wh" }
+            }
           }
         }
+      });
+
+      // Function to fetch latest readings and update chart
+      function refreshChart() {
+        fetch("{% url 'readings' %}") // adjust URL name if needed
+          .then(res => res.json())
+          .then(data => {
+            const labels = data.map(r => r.timestamp.split(' ')[0]);  // e.g. '2025-08-28'
+            const values = data.map(r => r.today_energy);
+
+            energyChart.data.labels = labels.reverse();  // oldest first
+            energyChart.data.datasets[0].data = values.reverse();
+            energyChart.update();
+          })
+          .catch(err => console.error('Chart fetch error:', err));
       }
+
+      // Initial load and poll every minute
+      refreshChart();
+      setInterval(refreshChart, 60 * 1000);
     });
 
-    // Function to fetch latest readings and update chart
-    function refreshChart() {
-      fetch("{% url 'readings' %}") // adjust URL name if needed
+    function refreshSensor() {
+      fetch("{% url 'latest_sensor' %}")
         .then(res => res.json())
         .then(data => {
-          const labels = data.map(r => r.timestamp.split(' ')[0]);  // e.g. '2025-08-28'
-          const values = data.map(r => r.today_energy);
+          if (!data.error) {
+            document.getElementById("tempValue").textContent = data.temperature;
+            document.getElementById("ldrValue").textContent = data.ldr;
+            document.getElementById("sensorTime").textContent = data.timestamp;
 
-          energyChart.data.labels = labels.reverse();  // oldest first
-          energyChart.data.datasets[0].data = values.reverse();
-          energyChart.update();
+            // Example threshold check: highlight if temp > 30
+            if (data.temperature > 30) {
+              document.getElementById("tempValue").style.color = "red";
+            } else {
+              document.getElementById("tempValue").style.color = "black";
+            }
+          }
         })
-        .catch(err => console.error('Chart fetch error:', err));
+        .catch(err => console.error("Sensor fetch error:", err));
     }
 
-    // Initial load and poll every minute
-    refreshChart();
-    setInterval(refreshChart, 60 * 1000);
-  });
-</script>
+    // Poll every 5 seconds
+    refreshSensor();
+    setInterval(refreshSensor, 5000);
+
+  </script>
+
+    
+
+
   </main>
 
   <footer>
