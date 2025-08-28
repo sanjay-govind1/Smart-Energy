@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'energy',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -98,6 +99,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+
+CRONJOBS = [
+    ('0 2 * * *', 'django.core.management.call_command',['update_model']),
 ]
 
 
