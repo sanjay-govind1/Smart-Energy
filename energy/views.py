@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from .models import EnergyReading
 from energy.tapo_client.utils import collect_reading_sync 
+from .ml_utils import predict_tomorrow_energy
 
 def collect_data_view(request):
     try:
@@ -38,6 +39,17 @@ def home_view(request):
         latest = collect_reading_sync()
     except Exception as e:
         print(f"Error fetching live reading: {e}")
-        latest = EnergyReading.objects.first()  # fallback
+        latest = EnergyReading.objects.first()
 
-    return render(request, "energy/home.html", {"latest": latest})
+    # Default: no forecast
+    forecast = None
+    if latest:
+        try:
+            forecast = predict_tomorrow_energy(latest)
+        except Exception as e:
+            print(f"Prediction error: {e}")
+
+    return render(request, "energy/home.html", {
+        "latest": latest,
+        "forecast": forecast
+    })

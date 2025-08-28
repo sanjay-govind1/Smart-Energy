@@ -6,17 +6,21 @@
 <body>
     <h1>Smart Energy Usage Monitoring</h1>
 
-    {% if latest %}
-        <h2>Latest Reading ({{ latest.timestamp }})</h2>
-        <ul>
-            <li>Device: {{ latest.device_name }}</li>
-            <li>Current Power: {{ latest.current_power }} W</li>
-            <li>Today’s Energy: {{ latest.today_energy }} kWh</li>
-            <li>Month’s Energy: {{ latest.month_energy }} kWh</li>
-            <li>Runtime: {{ latest.runtime_minutes }} minutes</li>
-        </ul>
-    {% else %}
-        <p>No readings available.</p>
-    {% endif %}
+{% if latest %}
+  <p><strong>Device:</strong> {{ latest.device_name }}</p>
+  <p><strong>Current Power:</strong> {{ latest.current_power }} W</p>
+  <p><strong>Today's Energy:</strong> {{ latest.today_energy }} Wh</p>
+  <p><strong>Month's Energy:</strong> {{ latest.month_energy }} Wh</p>
+  <p><strong>Runtime:</strong> {{ latest.runtime_minutes }} minutes</p>
+  <p><strong>Timestamp:</strong> {{ latest.timestamp }}</p>
+{% else %}
+  <p>No readings available</p>
+{% endif %}
+
+{% if forecast %}
+  <h2>🔮 Predicted Energy Usage for Tomorrow</h2>
+  <p>{{ forecast }} Wh</p>
+{% endif %}
+
 </body>
 </html>
