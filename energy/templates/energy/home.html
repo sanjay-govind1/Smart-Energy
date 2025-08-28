@@ -1,26 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <head>
-    <title>Smart Energy Usage</title>
+  <meta charset="UTF-8">
+  <title>Smart Energy Usage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: #2563eb;
+    }
+
+    .stat {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .stat strong {
+      color: #111;
+    }
+
+    .forecast {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #111;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-    <h1>Smart Energy Usage Monitoring</h1>
 
-{% if latest %}
-  <p><strong>Device:</strong> {{ latest.device_name }}</p>
-  <p><strong>Current Power:</strong> {{ latest.current_power }} W</p>
-  <p><strong>Today's Energy:</strong> {{ latest.today_energy }} Wh</p>
-  <p><strong>Month's Energy:</strong> {{ latest.month_energy }} Wh</p>
-  <p><strong>Runtime:</strong> {{ latest.runtime_minutes }} minutes</p>
-  <p><strong>Timestamp:</strong> {{ latest.timestamp }}</p>
-{% else %}
-  <p>No readings available</p>
-{% endif %}
+  <header>
+    <h1>⚡ Smart Energy Usage Monitoring</h1>
+  </header>
 
-{% if forecast %}
-  <h2>🔮 Predicted Energy Usage for Tomorrow</h2>
-  <p>{{ forecast }} Wh</p>
-{% endif %}
+  <main>
+    {% if latest %}
+      <div class="card">
+        <h2>📊 Latest Reading</h2>
+        <p class="stat"><strong>Device:</strong> {{ latest.device_name }}</p>
+        <p class="stat"><strong>Current Power:</strong> {{ latest.current_power }} W</p>
+        <p class="stat"><strong>Today's Energy:</strong> {{ latest.today_energy }} Wh</p>
+        <p class="stat"><strong>Month's Energy:</strong> {{ latest.month_energy }} Wh</p>
+        <p class="stat"><strong>Runtime:</strong> {{ latest.runtime_minutes }} minutes</p>
+        <p class="stat"><strong>Timestamp:</strong> {{ latest.timestamp }}</p>
+      </div>
+    {% else %}
+      <div class="card">
+        <h2>📊 Latest Reading</h2>
+        <p>No readings available</p>
+      </div>
+    {% endif %}
+
+    {% if forecast %}
+      <div class="card">
+        <h2>🔮 Predicted Energy Usage</h2>
+        <p class="forecast">{{ forecast }} Wh (Tomorrow)</p>
+      </div>
+    {% endif %}
+    <div class="card">
+  <h2>📈 Energy Usage (Last 7 Days) — Live Update</h2>
+  <canvas id="energyChart"></canvas>
+</div>
+
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('energyChart').getContext('2d');
+    const energyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [],  // empty initially
+        datasets: [{
+          label: 'Daily Energy (Wh)',
+          data: [],
+          backgroundColor: 'rgba(37, 99, 235, 0.6)',
+          borderColor: 'rgba(37, 99, 235, 1)',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: "Wh" }
+          }
+        }
+      }
+    });
+
+    // Function to fetch latest readings and update chart
+    function refreshChart() {
+      fetch("{% url 'readings' %}") // adjust URL name if needed
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.map(r => r.timestamp.split(' ')[0]);  // e.g. '2025-08-28'
+          const values = data.map(r => r.today_energy);
+
+          energyChart.data.labels = labels.reverse();  // oldest first
+          energyChart.data.datasets[0].data = values.reverse();
+          energyChart.update();
+        })
+        .catch(err => console.error('Chart fetch error:', err));
+    }
+
+    // Initial load and poll every minute
+    refreshChart();
+    setInterval(refreshChart, 60 * 1000);
+  });
+</script>
+  </main>
+
+  <footer>
+    Smart Energy Dashboard © 2025
+  </footer>
 
 </body>
 </html>
